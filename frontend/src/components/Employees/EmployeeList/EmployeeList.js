@@ -1,25 +1,30 @@
-import React from 'react';
+import React from "react";
 
-import EventItem from './EventItem/EventItem';
-import './EventList.css';
+import EmployeeItem from "./EmployeeItem/EmployeeItem";
+import "./EmployeeList.css";
 
-const eventList = props => {
-  const events = props.events.map(event => {
+const employeeList = props => {
+  let employees;
+
+  if (props.employees.length === 0) {
+    return null;
+  }
+
+  employees = props.employees.map(employee => {
     return (
-      <EventItem
-        key={event._id}
-        eventId={event._id}
-        title={event.title}
-        price={event.price}
-        date={event.date}
-        userId={props.authUserId}
-        creatorId={event.creator._id}
-        onDetail={props.onViewDetail}
+      <EmployeeItem
+        key={employee._id}
+        employeeId={employee._id}
+        firstname={employee.firstname}
+        lastname={employee.lastname}
+        addresses={employee.addresses}
+        skills={employee.skills}
+        onDelete={props.onDelete}
       />
     );
   });
 
-  return <ul className="event__list">{events}</ul>;
+  return <ul className="event__list">{employees}</ul>;
 };
 
-export default eventList;
+export default employeeList;
