@@ -66,18 +66,18 @@ class EmployeesPage extends Component {
       return;
     }
 
-    const address = {
-      line1,
-      line2,
-      city,
-      state,
-      zipCode
-    };
-
     const requestBody = {
       query: `
           mutation {
-            createEmployee(employeeInput: {firstname: "${firstname}", lastname: "${lastname}", addresses: [${address}], skills: [${skill}]}) {
+            createEmployee(employeeInput: {firstname: "${firstname}", lastname: "${lastname}", addresses: [{
+              line1: "${line1}",
+              line2: "${line2}",
+              city: "${city}",
+              state: "${state}",
+              zipcode: "${zipCode}"
+            }], skills: [{
+              name: "${skill}"
+            }]}) {
               _id
               firstname
               lastname
@@ -177,7 +177,9 @@ class EmployeesPage extends Component {
 
   showDetailHandler = employeeId => {
     this.setState(prevState => {
-      const selectedEmployee = prevState.employees.find(e => e._id === employeeId);
+      const selectedEmployee = prevState.employees.find(
+        e => e._id === employeeId
+      );
       return { selectedEmployee: selectedEmployee };
     });
   };
@@ -211,7 +213,7 @@ class EmployeesPage extends Component {
         return res.json();
       })
       .then(resData => {
-        const employees = resData.data.employees;
+        const employees = resData.data.employees || [];
         console.log(employees);
         if (this.isActive) {
           this.setState({ employees: employees, isLoading: false });
@@ -295,10 +297,10 @@ class EmployeesPage extends Component {
                 <label htmlFor="line1">Line 1</label>
                 <input type="text" id="line1" ref={this.line1ElRef} />
               </div>
-              {/* <div className="form-control">
+              <div className="form-control">
                 <label htmlFor="line2">Line 2</label>
                 <input type="text" id="line2" ref={this.line2ElRef} />
-              </div> */}
+              </div>
               <div className="form-control">
                 <label htmlFor="city">City</label>
                 <input type="text" id="city" ref={this.cityElRef} />
@@ -328,18 +330,20 @@ class EmployeesPage extends Component {
             confirmText={this.context.token ? "Book" : "Confirm"}
           >
             <h1>{this.state.selectedEmployee.title}</h1>
-            <h2>{new Date(this.state.selectedEmployee.date).toLocaleDateString()}</h2>
+            <h2>
+              {new Date(this.state.selectedEmployee.date).toLocaleDateString()}
+            </h2>
             <p>{this.state.selectedEmployee.description}</p>
           </Modal>
         )}
-        {this.context.token && (
-          <div className="events-control">
-            <p>List of Employees</p>
-            <button className="btn" onClick={this.startCreateEventHandler}>
-              Add an Employee
-            </button>
-          </div>
-        )}
+        {/* {this.context.token && ( */}
+        <div className="events-control">
+          <p>List of Employees</p>
+          <button className="btn" onClick={this.startCreateEventHandler}>
+            Add an Employee
+          </button>
+        </div>
+        {/* )} */}
         {this.state.isLoading ? (
           <Spinner />
         ) : (

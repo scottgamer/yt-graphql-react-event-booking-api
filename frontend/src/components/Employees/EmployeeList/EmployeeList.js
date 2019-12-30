@@ -6,7 +6,7 @@ import "./EmployeeList.css";
 const employeeList = props => {
   let employees;
 
-  if (props.employees.length === 0) {
+  if (!props.employees || props.employees.length === 0) {
     return null;
   }
 
