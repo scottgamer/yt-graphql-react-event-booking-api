@@ -1,157 +1,48 @@
-import React, { useState, useRef, useContext } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 
 import Modal from "../../components/Modal/Modal";
 import Backdrop from "../../components/Backdrop/Backdrop";
 import EmployeeList from "../../components/Employees/EmployeeList/EmployeeList";
 import Spinner from "../../components/Spinner/Spinner";
 import AuthContext from "../../context/auth-context";
+
+import axios from "axios";
+
 import "../Events.css";
 
-import React from "react";
-
 const Employees = () => {
-  const [] = useState({
+  const [employees, setEmployees] = useState({
     creating: false,
     employees: [],
-    isLoading: false,
     selectedEmployee: null
   });
+
+  const [isActive, setActive] = useState(true);
+  const [isLoading, setLoading] = useState(false);
 
   const contextType = useContext(AuthContext);
 
   // References to html form elements
-  this.firstnameElRef = useRef(null);
-  this.lastnameElRef = useRef(null);
-  this.line1ElRef = useRef(null);
-  this.line2ElRef = useRef(null);
-  this.cityElRef = useRef(null);
-  this.stateElRef = useRef(null);
-  this.zipcodeElRef = useRef(null);
-  this.skillElRef = useRef(null);
+  const firstnameElRef = useRef(null);
+  const lastnameElRef = useRef(null);
+  const line1ElRef = useRef(null);
+  const line2ElRef = useRef(null);
+  const cityElRef = useRef(null);
+  const stateElRef = useRef(null);
+  const zipcodeElRef = useRef(null);
+  const skillElRef = useRef(null);
 
-  return <div></div>;
-};
+  useEffect(() => {
+    fetchEmployees();
+    setActive(false);
+  }, []);
 
-export default Employees;
+  const fetchEmployees = async () => {
+    try {
+      setLoading(true);
 
-class EmployeesPage extends Component {
-  // state = {
-  //   creating: false,
-  //   employees: [],
-  //   isLoading: false,
-  //   selectedEmployee: null
-  // };
-
-  isActive = true;
-
-  // static contextType = AuthContext;
-
-  // constructor(props) {
-  //   super(props);
-  //   this.firstnameElRef = React.createRef();
-  //   this.lastnameElRef = React.createRef();
-  //   this.line1ElRef = React.createRef();
-  //   this.line2ElRef = React.createRef();
-  //   this.cityElRef = React.createRef();
-  //   this.stateElRef = React.createRef();
-  //   this.zipcodeElRef = React.createRef();
-  //   this.skillElRef = React.createRef();
-  // }
-
-  componentDidMount() {
-    this.fetchEmployees();
-  }
-
-  startCreateEventHandler = () => {
-    this.setState({ creating: true });
-  };
-
-  modalConfirmHandler = () => {
-    this.setState({ creating: false });
-    const firstname = this.firstnameElRef.current.value;
-    const lastname = this.lastnameElRef.current.value;
-    const line1 = this.line1ElRef.current.value;
-    const line2 = this.line2ElRef.current.value;
-    const city = this.cityElRef.current.value;
-    const state = this.stateElRef.current.value;
-    const zipCode = this.zipcodeElRef.current.value;
-    const skill = this.skillElRef.current.value;
-    // const address = this.addressElRef.current.value;
-    // const skill = this.skillElRef.current.value;
-
-    if (
-      firstname.trim().length === 0 ||
-      lastname.trim().length === 0 ||
-      line1.trim().length === 0 ||
-      line2.trim().length === 0 ||
-      city.trim().length === 0 ||
-      state.trim().length === 0 ||
-      zipCode.trim().length === 0 ||
-      skill.trim().length === 0
-    ) {
-      return;
-    }
-
-    const requestBody = {
-      query: `
-          mutation {
-            createEmployee(employeeInput: {firstname: "${firstname}", lastname: "${lastname}", addresses: [{
-              line1: "${line1}",
-              line2: "${line2}",
-              city: "${city}",
-              state: "${state}",
-              zipcode: "${zipCode}"
-            }], skills: [{
-              name: "${skill}"
-            }]}) {
-              _id
-              firstname
-              lastname
-            }
-          }
-        `
-    };
-
-    const token = this.context.token;
-
-    fetch("http://localhost:8000/graphql", {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token
-      }
-    })
-      .then(res => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Failed!");
-        }
-        return res.json();
-      })
-      .then(resData => {
-        this.setState(prevState => {
-          const updatedEmployees = [...prevState.employees];
-          updatedEmployees.push({
-            _id: resData.data.createEmployee._id,
-            firstname: resData.data.createEmployee.firstname,
-            lastname: resData.data.createEmployee.lastname
-          });
-          return { employees: updatedEmployees };
-        });
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  };
-
-  modalCancelHandler = () => {
-    this.setState({ creating: false, selectedEmployee: null });
-  };
-
-  fetchEmployees() {
-    this.setState({ isLoading: true });
-    const requestBody = {
-      query: `
+      const requestBody = {
+        query: `
           query {
             employees {
               _id
@@ -171,50 +62,140 @@ class EmployeesPage extends Component {
             }
           }
         `
-    };
+      };
 
-    fetch("http://localhost:8000/graphql", {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-      .then(res => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Failed!");
+      const response = await axios.post(
+        `http://localhost:8000/graphql`,
+        JSON.stringify(requestBody),
+        {
+          headers: {
+            "Content-Type": "application/json"
+          }
         }
-        return res.json();
-      })
-      .then(resData => {
-        const employees = resData.data.employees;
-        console.log(employees);
-        if (this.isActive) {
-          this.setState({ employees: employees, isLoading: false });
-        }
-      })
-      .catch(err => {
-        console.log(err);
-        if (this.isActive) {
-          this.setState({ isLoading: false });
-        }
-      });
-  }
-
-  showDetailHandler = employeeId => {
-    this.setState(prevState => {
-      const selectedEmployee = prevState.employees.find(
-        e => e._id === employeeId
       );
-      return { selectedEmployee: selectedEmployee };
-    });
+
+      if (response.status !== 200 && response.status !== 201) {
+        throw new Error("Failed!");
+      }
+
+      const employeesRes = response.data.data.employees;
+      console.log(employeesRes);
+
+      if (isActive) {
+        setEmployees({ ...employees, employees: employeesRes });
+        setLoading(false);
+      }
+    } catch (error) {
+      console.log(error);
+      if (isActive) {
+        setLoading(false);
+      }
+    }
   };
 
-  deleteEmployeeHandler = employeeId => {
-    this.setState({ isLoading: true });
+  const startCreateEventHandler = () => {
+    setEmployees({ creating: true });
+  };
 
-    const requestBody = {
-      query: `
+  const modalConfirmHandler = async () => {
+    try {
+      setEmployees({ creating: false });
+
+      const firstname = this.firstnameElRef.current.value;
+      const lastname = this.lastnameElRef.current.value;
+      const line1 = this.line1ElRef.current.value;
+      const line2 = this.line2ElRef.current.value;
+      const city = this.cityElRef.current.value;
+      const state = this.stateElRef.current.value;
+      const zipCode = this.zipcodeElRef.current.value;
+      const skill = this.skillElRef.current.value;
+
+      if (
+        firstname.trim().length === 0 ||
+        lastname.trim().length === 0 ||
+        line1.trim().length === 0 ||
+        line2.trim().length === 0 ||
+        city.trim().length === 0 ||
+        state.trim().length === 0 ||
+        zipCode.trim().length === 0 ||
+        skill.trim().length === 0
+      ) {
+        return;
+      }
+
+      const requestBody = {
+        query: `
+          mutation {
+            createEmployee(employeeInput: {firstname: "${firstname}", lastname: "${lastname}", addresses: [{
+              line1: "${line1}",
+              line2: "${line2}",
+              city: "${city}",
+              state: "${state}",
+              zipcode: "${zipCode}"
+            }], skills: [{
+              name: "${skill}"
+            }]}) {
+              _id
+              firstname
+              lastname
+            }
+          }
+        `
+      };
+
+      const token = contextType.token;
+
+      const response = await axios.post(
+        `http://localhost:8000/graphql`,
+        JSON.stringify(requestBody),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token
+          }
+        }
+      );
+
+      if (response.status !== 200 && response.status !== 201) {
+        throw new Error("Failed!");
+      }
+
+      const updatedEmployees = [...employees.employees];
+
+      updatedEmployees.push({
+        _id: response.data.data.createEmployee._id,
+        firstname: response.data.data.createEmployee.firstname,
+        lastname: response.data.data.createEmployee.lastname
+      });
+
+      return { employees: updatedEmployees };
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const modalCancelHandler = () => {
+    setEmployees({ creating: false, selectedEmployee: null });
+  };
+
+  const showDetailHandler = employeeId => {
+    const selectedEmployee = employees.employees.find(
+      e => e._id === employeeId
+    );
+
+    return { selectedEmployee: selectedEmployee };
+  };
+
+  const updateEmployeeHandler = async () => {
+    console.log(`update employee handler`);
+  };
+
+  const deleteEmployeeHandler = async employeeId => {
+    try {
+      setLoading(true);
+
+      const requestBody = {
+        query: `
           mutation {
             deleteEmployee(employeeId: "${employeeId}") {
               _id
@@ -223,165 +204,118 @@ class EmployeesPage extends Component {
             }
           }
         `
-    };
+      };
 
-    fetch("http://localhost:8000/graphql", {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-      .then(res => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Failed!");
-        }
-        return res.json();
-      })
-      .then(resData => {
-        const employees = resData.data.employees || [];
-        console.log(employees);
-        if (this.isActive) {
-          this.setState({ employees: employees, isLoading: false });
-        }
-      })
-      .catch(err => {
-        console.log(err);
-        if (this.isActive) {
-          this.setState({ isLoading: false });
-        }
-      });
-  };
-
-  bookEventHandler = () => {
-    if (!this.context.token) {
-      this.setState({ selectedEmployee: null });
-      return;
-    }
-    const requestBody = {
-      query: `
-          mutation {
-            bookEvent(eventId: "${this.state.selectedEmployee._id}") {
-              _id
-             createdAt
-             updatedAt
-            }
+      const response = await axios.post(
+        `http://localhost:8000/graphql`,
+        JSON.stringify(requestBody),
+        {
+          headers: {
+            "Content-Type": "application/json"
           }
-        `
-    };
-
-    fetch("http://localhost:8000/graphql", {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + this.context.token
-      }
-    })
-      .then(res => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Failed!");
         }
-        return res.json();
-      })
-      .then(resData => {
-        console.log(resData);
-        this.setState({ selectedEmployee: null });
-      })
-      .catch(err => {
-        console.log(err);
-      });
+      );
+
+      if (response.status !== 200 && response.status !== 201) {
+        throw new Error("Failed!");
+      }
+
+
+      // TODO fix response after deletion
+      const employeesRes = response.data.data.employees;
+      console.log(employeesRes);
+      if (isActive) {
+        setEmployees({ ...employees, employees: employeesRes });
+        setLoading(false);
+      }
+    } catch (error) {
+      console.log(error);
+      if (isActive) {
+        setLoading(false);
+      }
+    }
   };
 
-  componentWillUnmount() {
-    this.isActive = false;
-  }
+  return (
+    <React.Fragment>
+      {(employees.creating || employees.selectedEmployee) && <Backdrop />}
 
-  render() {
-    return (
-      <React.Fragment>
-        {(this.state.creating || this.state.selectedEmployee) && <Backdrop />}
-        {this.state.creating && (
-          <Modal
-            title="Add Employee"
-            canCancel
-            canConfirm
-            onCancel={this.modalCancelHandler}
-            onConfirm={this.modalConfirmHandler}
-            confirmText="Confirm"
-          >
-            <form>
-              <div className="form-control">
-                <label htmlFor="firstname">First Name</label>
-                <input type="text" id="firstname" ref={this.firstnameElRef} />
-              </div>
-              <div className="form-control">
-                <label htmlFor="lastname">Last Name</label>
-                <input type="text" id="lastname" ref={this.lastnameElRef} />
-              </div>
-              <div className="form-control">
-                <label htmlFor="line1">Line 1</label>
-                <input type="text" id="line1" ref={this.line1ElRef} />
-              </div>
-              <div className="form-control">
-                <label htmlFor="line2">Line 2</label>
-                <input type="text" id="line2" ref={this.line2ElRef} />
-              </div>
-              <div className="form-control">
-                <label htmlFor="city">City</label>
-                <input type="text" id="city" ref={this.cityElRef} />
-              </div>
-              <div className="form-control">
-                <label htmlFor="state">State</label>
-                <input type="text" id="state" ref={this.stateElRef} />
-              </div>
-              <div className="form-control">
-                <label htmlFor="zipcode">Zip Code</label>
-                <input type="text" id="zipcode" ref={this.zipcodeElRef} />
-              </div>
-              <div className="form-control">
-                <label htmlFor="skill">Skill</label>
-                <input type="text" id="skill" ref={this.skillElRef} />
-              </div>
-            </form>
-          </Modal>
-        )}
-        {this.state.selectedEmployee && (
-          <Modal
-            title={this.state.selectedEmployee.firstname}
-            canCancel
-            canConfirm
-            onCancel={this.modalCancelHandler}
-            onConfirm={this.bookEventHandler}
-            confirmText={this.context.token ? "Book" : "Confirm"}
-          >
-            <h1>{this.state.selectedEmployee.title}</h1>
-            <h2>
-              {new Date(this.state.selectedEmployee.date).toLocaleDateString()}
-            </h2>
-            <p>{this.state.selectedEmployee.description}</p>
-          </Modal>
-        )}
-        {/* {this.context.token && ( */}
-        <div className="events-control">
-          <p>List of Employees</p>
-          <button className="btn" onClick={this.startCreateEventHandler}>
-            Add an Employee
-          </button>
-        </div>
-        {/* )} */}
-        {this.state.isLoading ? (
-          <Spinner />
-        ) : (
-          <EmployeeList
-            employees={this.state.employees}
-            authUserId={this.context.userId}
-            onDelete={this.deleteEmployeeHandler}
-          />
-        )}
-      </React.Fragment>
-    );
-  }
-}
+      {employees.creating && (
+        <Modal
+          title="Add Employee"
+          canCancel
+          canConfirm
+          onCancel={modalCancelHandler}
+          onConfirm={modalConfirmHandler}
+          confirmText="Confirm"
+        >
+          <form>
+            <div className="form-control">
+              <label htmlFor="firstname">First Name</label>
+              <input type="text" id="firstname" ref={firstnameElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="lastname">Last Name</label>
+              <input type="text" id="lastname" ref={lastnameElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="line1">Line 1</label>
+              <input type="text" id="line1" ref={line1ElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="line2">Line 2</label>
+              <input type="text" id="line2" ref={line2ElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="city">City</label>
+              <input type="text" id="city" ref={cityElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="state">State</label>
+              <input type="text" id="state" ref={stateElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="zipcode">Zip Code</label>
+              <input type="text" id="zipcode" ref={zipcodeElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="skill">Skill</label>
+              <input type="text" id="skill" ref={skillElRef} />
+            </div>
+          </form>
+        </Modal>
+      )}
+      {employees.selectedEmployee && (
+        <Modal
+          title={employees.selectedEmployee.firstname}
+          canCancel
+          canConfirm
+          onCancel={modalCancelHandler}
+          onConfirm={updateEmployeeHandler}
+          confirmText={`Update`}
+        >
+          <h1>{employees.selectedEmployee.firstname}</h1>
+        </Modal>
+      )}
+      {/* {this.context.token && ( */}
+      <div className="events-control">
+        <h1>List of Employees</h1>
+        <button className="btn" onClick={startCreateEventHandler}>
+          Add an Employee
+        </button>
+      </div>
+      {/* )} */}
+      {isLoading ? (
+        <Spinner />
+      ) : (
+        <EmployeeList
+          employees={employees.employees}
+          authUserId={contextType.userId}
+          onDelete={deleteEmployeeHandler}
+        />
+      )}
+    </React.Fragment>
+  );
+};
 
-export default EmployeesPage;
+export default Employees;
