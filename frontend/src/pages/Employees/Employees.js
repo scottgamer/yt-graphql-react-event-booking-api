@@ -220,14 +220,15 @@ const Employees = () => {
         throw new Error("Failed!");
       }
 
+      const deletedEmployeeId = response.data.data.deleteEmployee._id;
+      const currentEmployees = employees.employees;
 
-      // TODO fix response after deletion
-      const employeesRes = response.data.data.employees;
-      console.log(employeesRes);
-      if (isActive) {
-        setEmployees({ ...employees, employees: employeesRes });
-        setLoading(false);
-      }
+      const updatedEmployees = currentEmployees.filter(e => {
+        return e._id !== deletedEmployeeId;
+      });
+
+      setEmployees({ ...employees, employees: updatedEmployees });
+      setLoading(false);
     } catch (error) {
       console.log(error);
       if (isActive) {
