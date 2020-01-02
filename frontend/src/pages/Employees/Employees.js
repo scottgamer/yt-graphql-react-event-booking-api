@@ -12,7 +12,6 @@ import "../Events.css";
 
 const Employees = () => {
   const [employees, setEmployees] = useState({
-    creating: false,
     updating: false,
     employees: [],
     selectedEmployee: null
@@ -20,6 +19,7 @@ const Employees = () => {
 
   const [isActive, setActive] = useState(true);
   const [isLoading, setLoading] = useState(false);
+  const [isCreating, setCreating] = useState(false);
   const [isDeleting, setDeleting] = useState(false);
 
   const contextType = useContext(AuthContext);
@@ -95,7 +95,7 @@ const Employees = () => {
   };
 
   const startCreateEventHandler = () => {
-    setEmployees({ ...employees, creating: true });
+    setCreating(true);
   };
 
   const modalDeleteEmployeeHandler = employeeId => {
@@ -109,16 +109,17 @@ const Employees = () => {
 
   const modalConfirmHandler = async () => {
     try {
-      setEmployees({ creating: false });
+      setCreating(false);
+      setLoading(true);
 
-      const firstname = this.firstnameElRef.current.value;
-      const lastname = this.lastnameElRef.current.value;
-      const line1 = this.line1ElRef.current.value;
-      const line2 = this.line2ElRef.current.value;
-      const city = this.cityElRef.current.value;
-      const state = this.stateElRef.current.value;
-      const zipCode = this.zipcodeElRef.current.value;
-      const skill = this.skillElRef.current.value;
+      const firstname = firstnameElRef.current.value;
+      const lastname = lastnameElRef.current.value;
+      const line1 = line1ElRef.current.value;
+      const line2 = line2ElRef.current.value;
+      const city = cityElRef.current.value;
+      const state = stateElRef.current.value;
+      const zipCode = zipcodeElRef.current.value;
+      const skill = skillElRef.current.value;
 
       if (
         firstname.trim().length === 0 ||
@@ -148,6 +149,16 @@ const Employees = () => {
               _id
               firstname
               lastname
+              addresses{
+                _id
+                line1
+                line2
+                city
+                state
+              }
+              skills{
+                name
+              }
             }
           }
         `
@@ -171,14 +182,10 @@ const Employees = () => {
       }
 
       const updatedEmployees = [...employees.employees];
+      updatedEmployees.push(response.data.data.createEmployee);
 
-      updatedEmployees.push({
-        _id: response.data.data.createEmployee._id,
-        firstname: response.data.data.createEmployee.firstname,
-        lastname: response.data.data.createEmployee.lastname
-      });
-
-      return { employees: updatedEmployees };
+      setLoading(false);
+      setEmployees({ ...employees, employees: updatedEmployees });
     } catch (error) {
       console.log(error);
     }
@@ -187,10 +194,10 @@ const Employees = () => {
   const modalCancelHandler = () => {
     setEmployees({
       ...employees,
-      creating: false,
       updating: false,
       selectedEmployee: null
     });
+    setCreating(false);
     setDeleting(false);
   };
 
@@ -256,11 +263,9 @@ const Employees = () => {
 
   return (
     <React.Fragment>
-      {(employees.creating || isDeleting) && (
-        <Backdrop clicked={modalCancelHandler} />
-      )}
+      {(isCreating || isDeleting) && <Backdrop clicked={modalCancelHandler} />}
 
-      {employees.creating && (
+      {isCreating && (
         <Modal
           title="Add Employee"
           canCancel
