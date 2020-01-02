@@ -13,12 +13,14 @@ import "../Events.css";
 const Employees = () => {
   const [employees, setEmployees] = useState({
     creating: false,
+    updating: false,
     employees: [],
     selectedEmployee: null
   });
 
   const [isActive, setActive] = useState(true);
   const [isLoading, setLoading] = useState(false);
+  const [isDeleting, setDeleting] = useState(false);
 
   const contextType = useContext(AuthContext);
 
@@ -79,7 +81,6 @@ const Employees = () => {
       }
 
       const employeesRes = response.data.data.employees;
-      console.log(employeesRes);
 
       if (isActive) {
         setEmployees({ ...employees, employees: employeesRes });
@@ -95,6 +96,15 @@ const Employees = () => {
 
   const startCreateEventHandler = () => {
     setEmployees({ creating: true });
+  };
+
+  const modalDeleteEmployeeHandler = employeeId => {
+    const selectedEmployee = employees.employees.find(
+      e => e._id === employeeId
+    );
+
+    setEmployees({ ...employees, selectedEmployee });
+    setDeleting(true);
   };
 
   const modalConfirmHandler = async () => {
@@ -175,7 +185,13 @@ const Employees = () => {
   };
 
   const modalCancelHandler = () => {
-    setEmployees({ creating: false, selectedEmployee: null });
+    setEmployees({
+      ...employees,
+      creating: false,
+      updating: false,
+      selectedEmployee: null
+    });
+    setDeleting(false);
   };
 
   const showDetailHandler = employeeId => {
@@ -192,6 +208,7 @@ const Employees = () => {
 
   const deleteEmployeeHandler = async employeeId => {
     try {
+      setDeleting(false);
       setLoading(true);
 
       const requestBody = {
@@ -239,7 +256,7 @@ const Employees = () => {
 
   return (
     <React.Fragment>
-      {(employees.creating || employees.selectedEmployee) && <Backdrop />}
+      {(employees.creating || isDeleting) && <Backdrop />}
 
       {employees.creating && (
         <Modal
@@ -286,7 +303,28 @@ const Employees = () => {
           </form>
         </Modal>
       )}
-      {employees.selectedEmployee && (
+
+      {isDeleting && employees.selectedEmployee && (
+        <Modal
+          title="Delete Employee"
+          canCancel
+          canConfirm
+          onCancel={modalCancelHandler}
+          onConfirm={() =>
+            deleteEmployeeHandler(employees.selectedEmployee._id)
+          }
+          confirmText={`Delete`}
+        >
+          <p>
+            Are you sure you want to delete employee:{" "}
+            {employees.selectedEmployee.firstname}{" "}
+            {employees.selectedEmployee.lastname}
+            {"?"}
+          </p>
+        </Modal>
+      )}
+
+      {employees.updating && employees.selectedEmployee && (
         <Modal
           title={employees.selectedEmployee.firstname}
           canCancel
@@ -298,6 +336,7 @@ const Employees = () => {
           <h1>{employees.selectedEmployee.firstname}</h1>
         </Modal>
       )}
+
       {/* {this.context.token && ( */}
       <div className="events-control">
         <h1>List of Employees</h1>
@@ -306,13 +345,14 @@ const Employees = () => {
         </button>
       </div>
       {/* )} */}
+      
       {isLoading ? (
         <Spinner />
       ) : (
         <EmployeeList
           employees={employees.employees}
           authUserId={contextType.userId}
-          onDelete={deleteEmployeeHandler}
+          onDelete={modalDeleteEmployeeHandler}
         />
       )}
     </React.Fragment>

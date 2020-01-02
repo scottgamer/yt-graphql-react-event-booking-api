@@ -20,7 +20,12 @@ const employeeItem = props => (
       ))}
     </div>
     <div>
-      <button className="btn" onClick={props.onDelete.bind(this, props.employeeId)}>
+      <button
+        className="btn"
+        onClick={() => {
+          props.onDelete(props.employeeId);
+        }}
+      >
         Delete employee
       </button>
     </div>
