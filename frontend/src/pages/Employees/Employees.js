@@ -1,36 +1,62 @@
-import React, { Component } from "react";
+import React, { useState, useRef, useContext } from "react";
 
-import Modal from "../components/Modal/Modal";
-import Backdrop from "../components/Backdrop/Backdrop";
-import EmployeeList from "../components/Employees/EmployeeList/EmployeeList";
-import Spinner from "../components/Spinner/Spinner";
-import AuthContext from "../context/auth-context";
-import "./Events.css";
+import Modal from "../../components/Modal/Modal";
+import Backdrop from "../../components/Backdrop/Backdrop";
+import EmployeeList from "../../components/Employees/EmployeeList/EmployeeList";
+import Spinner from "../../components/Spinner/Spinner";
+import AuthContext from "../../context/auth-context";
+import "../Events.css";
 
-class EmployeesPage extends Component {
-  state = {
+import React from "react";
+
+const Employees = () => {
+  const [] = useState({
     creating: false,
     employees: [],
     isLoading: false,
     selectedEmployee: null
-  };
+  });
+
+  const contextType = useContext(AuthContext);
+
+  // References to html form elements
+  this.firstnameElRef = useRef(null);
+  this.lastnameElRef = useRef(null);
+  this.line1ElRef = useRef(null);
+  this.line2ElRef = useRef(null);
+  this.cityElRef = useRef(null);
+  this.stateElRef = useRef(null);
+  this.zipcodeElRef = useRef(null);
+  this.skillElRef = useRef(null);
+
+  return <div></div>;
+};
+
+export default Employees;
+
+class EmployeesPage extends Component {
+  // state = {
+  //   creating: false,
+  //   employees: [],
+  //   isLoading: false,
+  //   selectedEmployee: null
+  // };
+
   isActive = true;
 
-  static contextType = AuthContext;
+  // static contextType = AuthContext;
 
-  constructor(props) {
-    super(props);
-    this.firstnameElRef = React.createRef();
-    this.lastnameElRef = React.createRef();
-    this.line1ElRef = React.createRef();
-    this.line2ElRef = React.createRef();
-    this.cityElRef = React.createRef();
-    this.stateElRef = React.createRef();
-    this.zipcodeElRef = React.createRef();
-    this.skillElRef = React.createRef();
-    // this.addressElRef = React.createRef();
-    // this.skillElRef = React.createRef();
-  }
+  // constructor(props) {
+  //   super(props);
+  //   this.firstnameElRef = React.createRef();
+  //   this.lastnameElRef = React.createRef();
+  //   this.line1ElRef = React.createRef();
+  //   this.line2ElRef = React.createRef();
+  //   this.cityElRef = React.createRef();
+  //   this.stateElRef = React.createRef();
+  //   this.zipcodeElRef = React.createRef();
+  //   this.skillElRef = React.createRef();
+  // }
 
   componentDidMount() {
     this.fetchEmployees();
