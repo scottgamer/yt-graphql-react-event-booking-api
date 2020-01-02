@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import './Modal.css';
+import "./Modal.css";
 
 const modal = props => (
   <div className="modal">
