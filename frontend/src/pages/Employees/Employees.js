@@ -256,7 +256,9 @@ const Employees = () => {
 
   return (
     <React.Fragment>
-      {(employees.creating || isDeleting) && <Backdrop />}
+      {(employees.creating || isDeleting) && (
+        <Backdrop clicked={modalCancelHandler} />
+      )}
 
       {employees.creating && (
         <Modal
@@ -345,7 +347,7 @@ const Employees = () => {
         </button>
       </div>
       {/* )} */}
-      
+
       {isLoading ? (
         <Spinner />
       ) : (
