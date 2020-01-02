@@ -95,7 +95,7 @@ const Employees = () => {
   };
 
   const startCreateEventHandler = () => {
-    setEmployees({ creating: true });
+    setEmployees({ ...employees, creating: true });
   };
 
   const modalDeleteEmployeeHandler = employeeId => {
