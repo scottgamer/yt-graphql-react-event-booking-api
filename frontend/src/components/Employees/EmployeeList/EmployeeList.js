@@ -20,6 +20,7 @@ const employeeList = props => {
         addresses={employee.addresses}
         skills={employee.skills}
         onDelete={props.onDelete}
+        onUpdate={props.onUpdate}
       />
     );
   });

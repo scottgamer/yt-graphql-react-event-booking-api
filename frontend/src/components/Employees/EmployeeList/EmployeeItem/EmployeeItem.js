@@ -23,10 +23,18 @@ const employeeItem = props => (
       <button
         className="btn"
         onClick={() => {
+          props.onUpdate(props.employeeId);
+        }}
+      >
+        Update 
+      </button>
+      <button
+        className="btn"
+        onClick={() => {
           props.onDelete(props.employeeId);
         }}
       >
-        Delete employee
+        Delete 
       </button>
     </div>
   </li>

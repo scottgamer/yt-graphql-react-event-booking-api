@@ -12,7 +12,6 @@ import "../Events.css";
 
 const Employees = () => {
   const [employees, setEmployees] = useState({
-    updating: false,
     employees: [],
     selectedEmployee: null
   });
@@ -21,6 +20,7 @@ const Employees = () => {
   const [isLoading, setLoading] = useState(false);
   const [isCreating, setCreating] = useState(false);
   const [isDeleting, setDeleting] = useState(false);
+  const [isUpdating, setUpdating] = useState(false);
 
   const contextType = useContext(AuthContext);
 
@@ -194,11 +194,11 @@ const Employees = () => {
   const modalCancelHandler = () => {
     setEmployees({
       ...employees,
-      updating: false,
       selectedEmployee: null
     });
     setCreating(false);
     setDeleting(false);
+    setUpdating(false);
   };
 
   const showDetailHandler = employeeId => {
@@ -206,6 +206,9 @@ const Employees = () => {
       e => e._id === employeeId
     );
 
+    console.log(selectedEmployee);
+
+    // TODO use setEmployee and set selectedEmployee
     return { selectedEmployee: selectedEmployee };
   };
 
@@ -311,6 +314,53 @@ const Employees = () => {
         </Modal>
       )}
 
+      {/* TODO this modal should load all selected employee data for later update */}
+      {isUpdating && employees.selectedEmployee && (
+        <Modal
+          title="Update Employee"
+          canCancel
+          canConfirm
+          onCancel={modalCancelHandler}
+          onConfirm={modalConfirmHandler}
+          confirmText="Confirm"
+        >
+          <form>
+            <div className="form-control">
+              <label htmlFor="firstname">First Name</label>
+              <input type="text" id="firstname" ref={firstnameElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="lastname">Last Name</label>
+              <input type="text" id="lastname" ref={lastnameElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="line1">Line 1</label>
+              <input type="text" id="line1" ref={line1ElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="line2">Line 2</label>
+              <input type="text" id="line2" ref={line2ElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="city">City</label>
+              <input type="text" id="city" ref={cityElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="state">State</label>
+              <input type="text" id="state" ref={stateElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="zipcode">Zip Code</label>
+              <input type="text" id="zipcode" ref={zipcodeElRef} />
+            </div>
+            <div className="form-control">
+              <label htmlFor="skill">Skill</label>
+              <input type="text" id="skill" ref={skillElRef} />
+            </div>
+          </form>
+        </Modal>
+      )}
+
       {isDeleting && employees.selectedEmployee && (
         <Modal
           title="Delete Employee"
@@ -360,6 +410,7 @@ const Employees = () => {
           employees={employees.employees}
           authUserId={contextType.userId}
           onDelete={modalDeleteEmployeeHandler}
+          onUpdate={showDetailHandler}
         />
       )}
     </React.Fragment>
