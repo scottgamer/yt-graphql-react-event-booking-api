@@ -56,6 +56,7 @@ const Employees = () => {
                 line2
                 city
                 state
+                zipcode
               }
               skills {
                 _id
@@ -105,6 +106,15 @@ const Employees = () => {
 
     setEmployees({ ...employees, selectedEmployee });
     setDeleting(true);
+  };
+
+  const modalUpdateEmployeeHandler = employeeId => {
+    const selectedEmployee = employees.employees.find(
+      e => e._id === employeeId
+    );
+
+    setEmployees({ ...employees, selectedEmployee });
+    setUpdating(true);
   };
 
   const modalConfirmHandler = async () => {
@@ -206,14 +216,111 @@ const Employees = () => {
       e => e._id === employeeId
     );
 
-    console.log(selectedEmployee);
-
     // TODO use setEmployee and set selectedEmployee
     return { selectedEmployee: selectedEmployee };
   };
 
-  const updateEmployeeHandler = async () => {
-    console.log(`update employee handler`);
+  const updateEmployeeHandler = async employeeId => {
+    try {
+      setUpdating(false);
+      setLoading(true);
+
+      const addressId = employees.selectedEmployee.addresses[0]._id;
+      const skillId = employees.selectedEmployee.skills[0]._id;
+
+      const firstname = firstnameElRef.current.value;
+      const lastname = lastnameElRef.current.value;
+      const line1 = line1ElRef.current.value;
+      const line2 = line2ElRef.current.value;
+      const city = cityElRef.current.value;
+      const state = stateElRef.current.value;
+      const zipCode = zipcodeElRef.current.value;
+      const skill = skillElRef.current.value;
+
+      const requestBody = {
+        query: `
+      mutation {
+        updateEmployee(updateEmployeeInput: {
+          _id:"${employeeId}", 
+          firstname: "${firstname}"
+          lastname: "${lastname}"
+          addresses: [{
+            _id:"${addressId}", 
+            line1: "${line1}",
+            line2: "${line2}",
+            city: "${city}",
+            state: "${state}",
+            zipcode:"${zipCode}"
+          }]
+          skills: [
+            {
+              _id: "${skillId}"
+              name: "${skill}"
+            }
+          ]
+        }) {
+          _id
+          firstname
+          lastname
+        }
+      }
+      `
+      };
+
+      // TODO fix auth token
+      // const token = contextType.token;
+
+      const response = await axios.post(
+        `http://localhost:8000/graphql`,
+        JSON.stringify(requestBody),
+        {
+          headers: {
+            "Content-Type": "application/json"
+            // Authorization: "Bearer " + token
+          }
+        }
+      );
+
+      if (response.status !== 200 && response.status !== 201) {
+        throw new Error("Failed!");
+      }
+
+      const currentEmployees = employees.employees;
+      const toUpdateEmployeeIndex = currentEmployees.findIndex(
+        employee => employee._id === employeeId
+      );
+
+      currentEmployees[toUpdateEmployeeIndex] = {
+        _id: employeeId,
+        firstname: firstname,
+        lastname: lastname,
+        addresses: [
+          {
+            _id: addressId,
+            line1: line1,
+            line2: line2,
+            city: city,
+            state: state,
+            zipcode: zipCode
+          }
+        ],
+        skills: [
+          {
+            _id: skillId,
+            name: skill
+          }
+        ]
+      };
+
+      setEmployees({
+        ...employees,
+        employees: currentEmployees,
+        selectedEmployee: null
+      });
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const deleteEmployeeHandler = async employeeId => {
@@ -266,7 +373,9 @@ const Employees = () => {
 
   return (
     <React.Fragment>
-      {(isCreating || isDeleting) && <Backdrop clicked={modalCancelHandler} />}
+      {(isCreating || isUpdating || isDeleting) && (
+        <Backdrop clicked={modalCancelHandler} />
+      )}
 
       {isCreating && (
         <Modal
@@ -317,45 +426,87 @@ const Employees = () => {
       {/* TODO this modal should load all selected employee data for later update */}
       {isUpdating && employees.selectedEmployee && (
         <Modal
-          title="Update Employee"
+          title={`Update Employee ${employees.selectedEmployee.firstname} ${employees.selectedEmployee.lastname}`}
           canCancel
           canConfirm
           onCancel={modalCancelHandler}
-          onConfirm={modalConfirmHandler}
-          confirmText="Confirm"
+          onConfirm={() => {
+            updateEmployeeHandler(employees.selectedEmployee._id);
+          }}
+          confirmText="Update"
         >
           <form>
             <div className="form-control">
               <label htmlFor="firstname">First Name</label>
-              <input type="text" id="firstname" ref={firstnameElRef} />
+              <input
+                type="text"
+                id="firstname"
+                ref={firstnameElRef}
+                defaultValue={employees.selectedEmployee.firstname}
+              />
             </div>
             <div className="form-control">
               <label htmlFor="lastname">Last Name</label>
-              <input type="text" id="lastname" ref={lastnameElRef} />
+              <input
+                type="text"
+                id="lastname"
+                ref={lastnameElRef}
+                defaultValue={employees.selectedEmployee.lastname}
+              />
             </div>
             <div className="form-control">
               <label htmlFor="line1">Line 1</label>
-              <input type="text" id="line1" ref={line1ElRef} />
+              <input
+                type="text"
+                id="line1"
+                ref={line1ElRef}
+                defaultValue={employees.selectedEmployee.addresses[0].line1}
+              />
             </div>
             <div className="form-control">
               <label htmlFor="line2">Line 2</label>
-              <input type="text" id="line2" ref={line2ElRef} />
+              <input
+                type="text"
+                id="line2"
+                ref={line2ElRef}
+                defaultValue={employees.selectedEmployee.addresses[0].line2}
+              />
             </div>
             <div className="form-control">
               <label htmlFor="city">City</label>
-              <input type="text" id="city" ref={cityElRef} />
+              <input
+                type="text"
+                id="city"
+                ref={cityElRef}
+                defaultValue={employees.selectedEmployee.addresses[0].city}
+              />
             </div>
             <div className="form-control">
               <label htmlFor="state">State</label>
-              <input type="text" id="state" ref={stateElRef} />
+              <input
+                type="text"
+                id="state"
+                ref={stateElRef}
+                defaultValue={employees.selectedEmployee.addresses[0].state}
+              />
             </div>
             <div className="form-control">
               <label htmlFor="zipcode">Zip Code</label>
-              <input type="text" id="zipcode" ref={zipcodeElRef} />
+              <input
+                type="text"
+                id="zipcode"
+                ref={zipcodeElRef}
+                defaultValue={employees.selectedEmployee.addresses[0].zipcode}
+              />
             </div>
             <div className="form-control">
               <label htmlFor="skill">Skill</label>
-              <input type="text" id="skill" ref={skillElRef} />
+              <input
+                type="text"
+                id="skill"
+                ref={skillElRef}
+                defaultValue={employees.selectedEmployee.skills[0].name}
+              />
             </div>
           </form>
         </Modal>
@@ -381,19 +532,6 @@ const Employees = () => {
         </Modal>
       )}
 
-      {employees.updating && employees.selectedEmployee && (
-        <Modal
-          title={employees.selectedEmployee.firstname}
-          canCancel
-          canConfirm
-          onCancel={modalCancelHandler}
-          onConfirm={updateEmployeeHandler}
-          confirmText={`Update`}
-        >
-          <h1>{employees.selectedEmployee.firstname}</h1>
-        </Modal>
-      )}
-
       {/* {this.context.token && ( */}
       <div className="events-control">
         <h1>List of Employees</h1>
@@ -410,7 +548,7 @@ const Employees = () => {
           employees={employees.employees}
           authUserId={contextType.userId}
           onDelete={modalDeleteEmployeeHandler}
-          onUpdate={showDetailHandler}
+          onUpdate={modalUpdateEmployeeHandler}
         />
       )}
     </React.Fragment>
